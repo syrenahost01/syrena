@@ -59,7 +59,7 @@ services:
     container_name: ${CONTAINER_NAMESPACE}-grafana
     hostname: grafana
     volumes:
-      - ./grafana/grafana-tablette.ini:/etc/grafana/grafana.ini
+      - ./grafana/grafana-central.ini:/etc/grafana/grafana.ini
       - grafana-data:/var/lib/grafana
     networks:
       - network
