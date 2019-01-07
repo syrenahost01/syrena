@@ -41,7 +41,7 @@ services:
       - KAFKA_CONSUMER_GROUP=${CONTAINER_NAMESPACE}-telegraf
       - INFLUXDB=http://${CONTAINER_NAMESPACE}-influxdb:8086
     volumes:
-      - ./telegraf/telegraf-tablette.conf:/etc/telegraf/telegraf.conf:ro
+      - ./telegraf/telegraf-central.conf:/etc/telegraf/telegraf.conf:ro
     networks:
       - network
 
