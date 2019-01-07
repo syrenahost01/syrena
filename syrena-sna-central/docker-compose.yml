@@ -30,6 +30,8 @@ services:
       - kafka-broker-secrets:/etc/kafka/secrets
     networks:
       - network
+    ports:
+      - "9092:9092"
 
   telegraf:
     image: telegraf:${TELEGRAF_VERSION}
