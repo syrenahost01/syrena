@@ -86,7 +86,7 @@ services:
     hostname: telegraf
     environment:
       - KAFKA_LOCAL_TOPIC=${CONTAINER_SNA_NAMESPACE}-local
-      - KAFKA_REMOTE_TOPIC=${CONTAINER_SNA_NAMESPACE}-central
+      - KAFKA_REMOTE_TOPIC=${CONTAINER_CENTRAL_NAMESPACE}-central
       - KAFKA_BROKER=${CONTAINER_NAMESPACE}-kafka-broker:9092
       - KAFKA_CONSUMER_GROUP=${CONTAINER_NAMESPACE}-telegraf
       - INFLUXDB=http://${CONTAINER_NAMESPACE}-influxdb:8086
