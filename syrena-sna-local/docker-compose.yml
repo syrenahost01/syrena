@@ -30,6 +30,8 @@ services:
       - kafka-broker-secrets:/etc/kafka/secrets
     networks:
       - network
+    ports:
+      - "3000:3000"
 
   kafka-mirrormaker-to-sna:
     image: zeelos/kafka-mirrormaker:${MIRRORMAKER_VERSION}
@@ -44,7 +46,7 @@ services:
       #- MIRRORMAKER_CONSUMER_REBALANCE_LISTENER_ARGS=arg1,arg2
       #- MIRRORMAKER_MESSAGE_HANDLER=org.mypackage.MyHandler
       #- MIRRORMAKER_MESSAGE_HANDLER_ARGS=arg1,arg2
-      - CONSUMER_BOOTSTRAP_SERVERS=${CONTAINER_NAMESPACE}-kafka-broker:9092
+      - CONSUMER_BOOTSTRAP_SERVERS=syrena-central.duckdns.org:9092
       - CONSUMER_GROUP_ID=${CONTAINER_NAMESPACE}-mirrormaker-to-sna
       - CONSUMER_AUTO_OFFSET_RESET=earliest
       - PRODUCER_BOOTSTRAP_SERVERS=${CONTAINER_SNA_NAMESPACE}-kafka-broker:9092
@@ -70,7 +72,7 @@ services:
       - CONSUMER_BOOTSTRAP_SERVERS=${CONTAINER_SNA_NAMESPACE}-kafka-broker:9092
       - CONSUMER_GROUP_ID=${CONTAINER_NAMESPACE}-mirrormaker-from-sna
       - CONSUMER_AUTO_OFFSET_RESET=earliest
-      - PRODUCER_BOOTSTRAP_SERVERS=${CONTAINER_CENTRAL_NAMESPACE}-central-kafka-broker:9092
+      - PRODUCER_BOOTSTRAP_SERVERS=syrena-central.duckdns.org:9092
       - CLASSPATH=/home/mmchangetopic-1.0-SNAPSHOT.jar
     volumes:
       - ./mmchangetopic/mmchangetopic-1.0-SNAPSHOT.jar:/home/mmchangetopic-1.0-SNAPSHOT.jar
@@ -89,7 +91,7 @@ services:
       - KAFKA_CONSUMER_GROUP=${CONTAINER_NAMESPACE}-telegraf
       - INFLUXDB=http://${CONTAINER_NAMESPACE}-influxdb:8086
     volumes:
-      - ./telegraf/telegraf-tablette.conf:/etc/telegraf/telegraf.conf:ro
+      - ./telegraf/telegraf-local.conf:/etc/telegraf/telegraf.conf:ro
     networks:
       - network
 
@@ -107,7 +109,7 @@ services:
     container_name: ${CONTAINER_NAMESPACE}-grafana
     hostname: grafana
     volumes:
-      - ./grafana/grafana-tablette.ini:/etc/grafana/grafana.ini
+      - ./grafana/grafana-local.ini:/etc/grafana/grafana.ini
       - grafana-data:/var/lib/grafana
     networks:
       - network
