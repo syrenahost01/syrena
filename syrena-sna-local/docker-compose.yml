@@ -31,7 +31,7 @@ services:
     networks:
       - network
     ports:
-      - "3000:3000"
+      - "9092:9092"
 
   kafka-mirrormaker-to-sna:
     image: zeelos/kafka-mirrormaker:${MIRRORMAKER_VERSION}
