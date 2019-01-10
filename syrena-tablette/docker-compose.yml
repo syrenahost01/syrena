@@ -134,6 +134,7 @@ services:
     image: nodered/node-red-docker
     container_name: ${CONTAINER_NAMESPACE}-nodered
     hostname: node-red
+    user: "1000:1001"
     volumes:
       - ../data:/home/data
     networks:
