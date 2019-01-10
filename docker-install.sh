@@ -22,3 +22,11 @@ sudo docker-compose --version
 
 sudo docker volume create portainer_data
 sudo docker run -d -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock --restart=always --name portainer -v portainer_data:/data portainer/portainer
+
+chmod +x /syrena-central/syrena-install.sh
+chmod +x /syrena-local/syrena-install.sh
+chmod +x /syrena-tablette/syrena-install.sh
+
+chmod +x /syrena-central/mmchangetopic/launch.sh
+chmod +x /syrena-local/mmchangetopic/launch.sh
+chmod +x /syrena-tablette/mmchangetopic/launch.sh
