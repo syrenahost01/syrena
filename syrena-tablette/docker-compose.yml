@@ -134,7 +134,6 @@ services:
     image: nodered/node-red-docker
     container_name: ${CONTAINER_NAMESPACE}-nodered
     hostname: node-red
-    env_file.env
     volumes:
       ~/syrena/data:/home/data
     networks:
