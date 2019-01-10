@@ -27,6 +27,6 @@ chmod +x syrena-central/syrena-install.sh
 chmod +x syrena-local/syrena-install.sh
 chmod +x syrena-tablette/syrena-install.sh
 
-chmod +x syrena-central/mmchangetopic/launch.sh
-chmod +x syrena-local/mmchangetopic/launch.sh
-chmod +x syrena-tablette/mmchangetopic/launch.sh
+chmod +x syrena-central/mmchangetopic/launch
+chmod +x syrena-local/mmchangetopic/launch
+chmod +x syrena-tablette/mmchangetopic/launch
