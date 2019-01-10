@@ -135,7 +135,7 @@ services:
     container_name: ${CONTAINER_NAMESPACE}-nodered
     hostname: node-red
     volumes:
-      - ../syrena/data:/home/data
+      - ../data:/home/data
     networks:
       - network
     ports:
