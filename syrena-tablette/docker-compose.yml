@@ -23,7 +23,7 @@ services:
     env_file: .env
     environment:
       - KAFKA_ZOOKEEPER_CONNECT=${CONTAINER_NAMESPACE}-kafka-zookeeper:2181
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://syrena-sna-trg-tablette1.duckdns.org:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://${KAFKA_LOCAL_BROKER_HOSTNAME}:9092
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
     volumes:
       - kafka-broker-data:/var/lib/kafka/data
@@ -33,62 +33,53 @@ services:
     ports:
       - "9092:9092"
 
+  kafka-mirrormaker-from-sna:
+    image: zeelos/kafka-mirrormaker:${MIRRORMAKER_VERSION}
+    container_name: ${CONTAINER_NAMESPACE}-kafka-mirrormaker-from-sna
+    hostname: kafka-mirrormaker-from-sna
+    environment:
+      - MIRRORMAKER_WHITE_LIST=${REMOTE_TOPIC}
+      - MIRRORMAKER_ABORT_ON_SEND_FAILURE=true
+      - MIRRORMAKER_OFFSET_COMMIT_INTERVAL=60000
+      - MIRRORMAKER_NUM_STREAMS=1
+      - CONSUMER_BOOTSTRAP_SERVERS=${KAFKA_REMOTE_BROKER_HOSTNAME}:9092
+      - CONSUMER_GROUP_ID=${KAFKA_LOCAL_BROKER_HOSTNAME}-mirrormaker-from-sna
+      - CONSUMER_AUTO_OFFSET_RESET=earliest
+      - PRODUCER_BOOTSTRAP_SERVERS=${KAFKA_LOCAL_BROKER_HOSTNAME}:9092
+    networks:
+      - network
+
   kafka-mirrormaker-to-sna:
     image: zeelos/kafka-mirrormaker:${MIRRORMAKER_VERSION}
     container_name: ${CONTAINER_NAMESPACE}-kafka-mirrormaker-to-sna
     hostname: kafka-mirrormaker-to-sna
     environment:
-      - MIRRORMAKER_WHITE_LIST=${CONTAINER_SNA_NAMESPACE}-tablette
+      - MIRRORMAKER_WHITE_LIST=${LOCAL_TOPIC}
       - MIRRORMAKER_ABORT_ON_SEND_FAILURE=true
       - MIRRORMAKER_OFFSET_COMMIT_INTERVAL=60000
       - MIRRORMAKER_NUM_STREAMS=1
-      #- MIRRORMAKER_CONSUMER_REBALANCE_LISTENER=org.mypackage.MyListener
-      #- MIRRORMAKER_CONSUMER_REBALANCE_LISTENER_ARGS=arg1,arg2
       - MIRRORMAKER_MESSAGE_HANDLER=com.opencore.RenameTopicHandler
-      - MIRRORMAKER_MESSAGE_HANDLER_ARGS=${CONTAINER_SNA_NAMESPACE}-tablette,${CONTAINER_SNA_NAMESPACE}-local
-      - CONSUMER_BOOTSTRAP_SERVERS=${CONTAINER_NAMESPACE}-kafka-broker:9092
-      - CONSUMER_GROUP_ID=${CONTAINER_NAMESPACE}-mirrormaker-to-sna
+      - MIRRORMAKER_MESSAGE_HANDLER_ARGS=${LOCAL_TOPIC},${REMOTE_TOPIC}
+      - CONSUMER_BOOTSTRAP_SERVERS=${KAFKA_LOCAL_BROKER_HOSTNAME}:9092
+      - CONSUMER_GROUP_ID=${KAFKA_LOCAL_BROKER_HOSTNAME}-mirrormaker-to-sna
       - CONSUMER_AUTO_OFFSET_RESET=earliest
-      - PRODUCER_BOOTSTRAP_SERVERS=syrena-sna-trg-local.duckdns.org:9092
+      - PRODUCER_BOOTSTRAP_SERVERS=${KAFKA_REMOTE_BROKER_HOSTNAME}:9092
       - CLASSPATH=/home/mmchangetopic-1.0-SNAPSHOT.jar
     volumes:
       - ./mmchangetopic/mmchangetopic-1.0-SNAPSHOT.jar:/home/mmchangetopic-1.0-SNAPSHOT.jar
       - ./mmchangetopic/launch:/etc/confluent/docker/launch
     networks:
       - network
-
-  kafka-mirrormaker-from-sna:
-    image: zeelos/kafka-mirrormaker:${MIRRORMAKER_VERSION}
-    container_name: ${CONTAINER_NAMESPACE}-kafka-mirrormaker-from-sna
-    hostname: kafka-mirrormaker-from-sna
-    environment:
-      - MIRRORMAKER_WHITE_LIST=${CONTAINER_SNA_NAMESPACE}-local
-      - MIRRORMAKER_ABORT_ON_SEND_FAILURE=true
-      - MIRRORMAKER_OFFSET_COMMIT_INTERVAL=60000
-      - MIRRORMAKER_NUM_STREAMS=1
-      #- MIRRORMAKER_CONSUMER_REBALANCE_LISTENER=org.mypackage.MyListener
-      #- MIRRORMAKER_CONSUMER_REBALANCE_LISTENER_ARGS=arg1,arg2
-      #- MIRRORMAKER_MESSAGE_HANDLER=org.mypackage.MyHandler
-      #- MIRRORMAKER_MESSAGE_HANDLER_ARGS=arg1,arg2
-      - CONSUMER_BOOTSTRAP_SERVERS=syrena-sna-trg-local.duckdns.org:9092
-      - CONSUMER_GROUP_ID=${CONTAINER_NAMESPACE}-mirrormaker-from-sna
-      - CONSUMER_AUTO_OFFSET_RESET=earliest
-      - PRODUCER_BOOTSTRAP_SERVERS=${CONTAINER_NAMESPACE}-kafka-broker:9092
-      #- CLASSPATH=/home/mmchangetopic-1.0-SNAPSHOT.jar
-    #volumes:
-      #- ./mmchangetopic/mmchangetopic-1.0-SNAPSHOT.jar:/home/mmchangetopic-1.0-SNAPSHOT.jar
-    networks:
-      - network
-
+      
   telegraf:
     image: telegraf:${TELEGRAF_VERSION}
     container_name: ${CONTAINER_NAMESPACE}-telegraf
     hostname: telegraf
     environment:
-      - KAFKA_LOCAL_TOPIC=${CONTAINER_SNA_NAMESPACE}-tablette
-      - KAFKA_REMOTE_TOPIC=${CONTAINER_SNA_NAMESPACE}-local
+      - KAFKA_LOCAL_TOPIC=${LOCAL_TOPIC}
+      - KAFKA_REMOTE_TOPIC=${REMOTE_TOPIC}
       - KAFKA_BROKER=${CONTAINER_NAMESPACE}-kafka-broker:9092
-      - KAFKA_CONSUMER_GROUP=${CONTAINER_NAMESPACE}-telegraf
+      - KAFKA_CONSUMER_GROUP=${KAFKA_LOCAL_BROKER_HOSTNAME}-telegraf
       - INFLUXDB=http://${CONTAINER_NAMESPACE}-influxdb:8086
     volumes:
       - ./telegraf/telegraf-tablette.conf:/etc/telegraf/telegraf.conf:ro
@@ -115,6 +106,41 @@ services:
       - network
     ports:
       - "3000:3000"
+
+  kafka-control-center:
+    image: confluentinc/cp-enterprise-control-center:5.1.0
+    container_name: ${CONTAINER_NAMESPACE}-kafka-control-center
+    hostname: kafka-control-center
+    env_file: .env
+    environment:
+      - CONTROL_CENTER_ZOOKEEPER_CONNECT=${CONTAINER_NAMESPACE}-kafka-zookeeper:2181
+      - CONTROL_CENTER_BOOTSTRAP_SERVERS=${CONTAINER_NAMESPACE}-kafka-broker:9092
+      - CONTROL_CENTER_REPLICATION_FACTOR=1
+      - CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS=1
+      - CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS=1
+      - CONTROL_CENTER_STREAMS_NUM_STREAM_THREADS=2
+      - CONTROL_CENTER_CONNECT_CLUSTER=http://kafka-connect:8082
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 16384
+        hard: 16384
+    networks:
+      - network
+    ports: 
+      - "9021:9021"
+
+  node-red:
+    image: nodered/node-red-docker
+    container_name: ${CONTAINER_NAMESPACE}-nodered
+    hostname: node-red
+    env_file.env
+    volumes:
+      ~/syrena/data:/home/data
+    networks:
+      - network
+    ports:
+      - "1880:1880"
 
 volumes:
   kafka-zookeeper-log:
