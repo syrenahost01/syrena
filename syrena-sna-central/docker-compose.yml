@@ -23,7 +23,7 @@ services:
     env_file: .env
     environment:
       - KAFKA_ZOOKEEPER_CONNECT=${CONTAINER_NAMESPACE}-kafka-zookeeper:2181
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://syrena-central.duckdns.org:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://${KAFKA_LOCAL_BROKER_HOSTNAME}:9092
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
     volumes:
       - kafka-broker-data:/var/lib/kafka/data
@@ -38,7 +38,7 @@ services:
     container_name: ${CONTAINER_NAMESPACE}-telegraf
     hostname: telegraf
     environment:
-      - KAFKA_LOCAL_TOPIC=${CONTAINER_CENTRAL_NAMESPACE}-central
+      - KAFKA_LOCAL_TOPIC=${LOCAL_TOPIC}
       - KAFKA_BROKER=${CONTAINER_NAMESPACE}-kafka-broker:9092
       - KAFKA_CONSUMER_GROUP=${CONTAINER_NAMESPACE}-telegraf
       - INFLUXDB=http://${CONTAINER_NAMESPACE}-influxdb:8086
