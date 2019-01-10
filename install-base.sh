@@ -33,4 +33,5 @@ chmod +x syrena-tablette/mmchangetopic/launch
 
 chmod +x docker-build/docker-images-build.sh
 
-./docker-build/docker-images-build.sh
+cd docker-build
+./docker-images-build.sh
