@@ -30,3 +30,7 @@ chmod +x syrena-tablette/syrena-install.sh
 chmod +x syrena-central/mmchangetopic/launch
 chmod +x syrena-local/mmchangetopic/launch
 chmod +x syrena-tablette/mmchangetopic/launch
+
+chmod +x docker-build/docker-images-build.sh
+
+./docker-build/docker-images-build.sh
