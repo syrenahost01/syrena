@@ -68,6 +68,27 @@ services:
     ports:
       - "3000:3000"
 
+  kafka-control-center:
+    image: confluentinc/cp-enterprise-control-center:5.1.0
+    container_name: ${CONTAINER_NAMESPACE}-kafka-control-center
+    hostname: kafka-control-center
+    env_file: .env
+    environment:
+      - CONTROL_CENTER_ZOOKEEPER_CONNECT=${CONTAINER_NAMESPACE}-kafka-zookeeper:2181
+      - CONTROL_CENTER_BOOTSTRAP_SERVERS=${CONTAINER_NAMESPACE}-kafka-broker:9092
+      - CONTROL_CENTER_REPLICATION_FACTOR=1
+      - CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS=1
+      - CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS=1
+      - CONTROL_CENTER_STREAMS_NUM_STREAM_THREADS=2
+      - CONTROL_CENTER_CONNECT_CLUSTER=http://kafka-connect:8082
+   ulimits:
+      nproc: 65535
+      nofile:
+         soft: 16384
+         hard: 16384
+    ports: 
+      - 9021:9021
+
 volumes:
   kafka-zookeeper-log:
   kafka-zookeeper-secrets:
