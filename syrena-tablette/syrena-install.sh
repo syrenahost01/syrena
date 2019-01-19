@@ -19,7 +19,7 @@ sudo docker exec -it ${CONTAINER_NAMESPACE}-kafka-zookeeper kafka-topics --creat
 sudo docker container start ${CONTAINER_NAMESPACE}-influxdb
 while [ "`sudo docker inspect -f {{.State.Running}} ${CONTAINER_NAMESPACE}-influxdb`" != "true" ]; do sleep 15; done
 sleep 15
-sudo docker exec -it ${CONTAINER_NAMESPACE}-influxdb influx -execute 'create DATABASE syrena' -precision rfc3339
+sudo docker exec -it ${CONTAINER_NAMESPACE}-influxdb influx -execute 'create DATABASE syrena WITH DURATION 1d NAME "syrena-tablette"' -precision rfc3339
 
 sudo docker container start ${CONTAINER_NAMESPACE}-telegraf
 
