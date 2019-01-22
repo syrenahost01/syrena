@@ -2,6 +2,7 @@
 
 source .env
 
+
 sudo docker import ../docker-build/grafana/grafana-${GRAFANA_VERSION}-plugins.tar
 
 sudo docker-compose up --no-start
